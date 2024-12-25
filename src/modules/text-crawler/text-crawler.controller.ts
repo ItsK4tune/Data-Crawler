@@ -5,8 +5,6 @@ import { TextCrawlerService } from './text-crawler.service';
 @ApiTags('Data Crawler')
 @Controller('text-crawler')
 export class TextCrawlerController {
-
-
     constructor(
         private readonly textCrawlerService: TextCrawlerService,
     ) {}
@@ -30,7 +28,7 @@ export class TextCrawlerController {
         await this.textCrawlerService.initialize();
 
         for (const url of body.urls) {
-            await this.textCrawlerService.notification(url);
+            await this.textCrawlerService.crawlData(url);
         }
 
         await this.textCrawlerService.close();

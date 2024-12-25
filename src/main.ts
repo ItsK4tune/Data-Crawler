@@ -2,27 +2,15 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as compression from 'compression';
-import * as cookieParser from 'cookie-parser';
-import helmet from 'helmet';
-import * as morgan from 'morgan';
 
 import { env } from './config';
 import { AppModule } from './modules/app.module';
 
 const setMiddleware = (app: NestExpressApplication) => {
-  app.use(helmet());
-
   app.enableCors({
     credentials: true,
     origin: (_, callback) => callback(null, true),
   });
-
-  app.use(morgan('combined'));
-
-  app.use(compression());
-
-  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -42,16 +30,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   setMiddleware(app);
 
-  if (process.env.NODE_ENV !== 'production') {
-    const swaggerConfig = new DocumentBuilder()
-      .setTitle('Raw Text Crawler')
-      .build();
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Raw Text Crawler')
+    .build();
 
-    const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup('swagger', app, swaggerDocument, {
-      jsonDocumentUrl: 'swagger/json',
-    });
-  }
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('swagger', app, swaggerDocument, {
+    jsonDocumentUrl: 'swagger/json',
+  });
 
   await app.listen(env.port, () =>
     logger.warn(`> Listening on port ${env.port}`),

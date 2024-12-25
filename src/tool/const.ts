@@ -1,0 +1,1 @@
+export const pathFile: string = '../../../src/data/data.txt';

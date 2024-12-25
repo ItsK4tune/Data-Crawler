@@ -6,10 +6,8 @@ export const isLocal = process.env.NODE_ENV === 'local';
 
 const envVarsSchema = Joi.object()
   .keys({
-    NODE_ENV: Joi.string()
-      .valid('production', 'development', 'test', 'local', 'staging')
-      .required(),
     PORT: Joi.number().default(3000),
+    PAGE_LOAD_TIME: Joi.number().default(10000),
   })
   .unknown();
 
@@ -22,6 +20,6 @@ if (error != null) {
 }
 
 export const env = {
-  env: envVars.NODE_ENV,
   port: envVars.PORT,
+  time: envVars.PAGE_LOAD_TIME,
 };

@@ -3,17 +3,20 @@ import { Logger } from '@nestjs/common';
 import puppeteer, { Browser, Page, Puppeteer } from 'puppeteer';
 import { env } from 'src/config';
 import { WriteFileService } from '../write-file/write-file.service';
+import { LinkCrawlerService } from '../link-crawler/link-crawler.service';
 
 @Injectable()
 export class TextCrawlerService {
     private readonly logger = new Logger(TextCrawlerService.name);
     private browser: Browser;
     private page: Page;
-    private time: number = env.time;
-    private timeWindow: number = 500;
-    private timeDelay: number = 200;
 
-    constructor(private readonly writeFileService: WriteFileService){}
+    private static urls: string[] = [];
+
+    constructor(
+        private readonly writeFileService: WriteFileService,
+        private readonly linkCrawlerService: LinkCrawlerService,
+    ){}
 
     async initialize() {
         this.browser = await puppeteer.launch({ headless: true });
@@ -25,33 +28,39 @@ export class TextCrawlerService {
         await this.browser.close();
     }
 
-    async crawlData(input: string) {
-        this.logger.log(`Crawling data from url: ${input}`);
-        await this.dataCrawl(input);
+    async do(input: string[]) {
+        this.logger.log(`Finding more links related to given links`);
+        for (const link of input)
+            await this.linkCrawlerService.crawlLink(link, TextCrawlerService.urls, this.page);
+
+        let count = { index: 0 }
+        for (const url of TextCrawlerService.urls){
+            this.logger.log(`Crawling data from url: ${url}`);
+            await this.dataCrawl(url, count);
+        }
+
+        this.logger.log(`Crawled data successfully data from ${count.index}/${TextCrawlerService.urls.length} source(s)`);
     }
 
-    async dataCrawl(input: string) {
+    async dataCrawl(input: string, object: { index: number }) {
         this.page.setDefaultTimeout(5000);
 
         try {
-            await this.page.goto(input, {waitUntil: 'load'});
+            object.index++;
 
-            try {
-                await this.scrollDown(this.page, this.time);
-            }
-            catch (ScrollErr) {
-                await this.page.goto(input, {waitUntil: 'load'});
-            }
-            finally {
-                const text = await this.page.evaluate(() => {
-                    const bodyText = document.body.innerText;
-                    return bodyText;
-                });
+            await this.page.goto(input, {waitUntil: 'domcontentloaded'});
 
-                this.writeFileService.writeFile(text, input);
-            }
+            // await this.scrollDown();
+
+            const text = await this.page.evaluate(() => {
+                const bodyText = document.body.innerText;
+                return bodyText;
+            });
+
+            this.writeFileService.writeFile(text, input);
         }
         catch (err) {
+            object.index--;
             this.logger.warn(`Error crawling data from ${input}: ${err}`, );
         }
     }
@@ -74,7 +83,7 @@ export class TextCrawlerService {
                     timeSinceLastScroll = Date.now();
                 }
 
-                if (Date.now() - timeSinceLastScroll >= this.timeWindow){
+                if (Date.now() - timeSinceLastScroll >= env.timeWindow){
                     break;
                 }
 
@@ -82,7 +91,7 @@ export class TextCrawlerService {
                     break;
                 }
 
-                await this.delay(this.timeDelay);
+                await this.delay(env.timeDelay);
             }
         }
         catch (err){

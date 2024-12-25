@@ -26,11 +26,7 @@ export class TextCrawlerController {
     })
     async Submit(@Body() body: { urls: string[] }) {
         await this.textCrawlerService.initialize();
-
-        for (const url of body.urls) {
-            await this.textCrawlerService.crawlData(url);
-        }
-
+        await this.textCrawlerService.do(body.urls);
         await this.textCrawlerService.close();
     }
 }

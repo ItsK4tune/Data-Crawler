@@ -8,6 +8,9 @@ const envVarsSchema = Joi.object()
   .keys({
     PORT: Joi.number().default(3000),
     PAGE_LOAD_TIME: Joi.number().default(10000),
+    TIME_WINDOW: Joi.number().default(500),
+    TIME_DELAY: Joi.number().default(200),
+    LINK_PER_GEN: Joi.number().default(10),
   })
   .unknown();
 
@@ -22,4 +25,7 @@ if (error != null) {
 export const env = {
   port: envVars.PORT,
   time: envVars.PAGE_LOAD_TIME,
+  timeWindow: envVars.TIME_WINDOW,
+  timeDelay: envVars.TIME_DELAY,
+  perGen: envVars.LINK_PER_GEN,
 };

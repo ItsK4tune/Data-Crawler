@@ -10,7 +10,7 @@ const envVarsSchema = Joi.object()
     PAGE_LOAD_TIME: Joi.number().default(10000),
     TIME_WINDOW: Joi.number().default(500),
     TIME_DELAY: Joi.number().default(200),
-    LINK_PER_GEN: Joi.number().default(10),
+    GENERATION_INDEX: Joi.number().default(10),
   })
   .unknown();
 
@@ -27,5 +27,5 @@ export const env = {
   time: envVars.PAGE_LOAD_TIME,
   timeWindow: envVars.TIME_WINDOW,
   timeDelay: envVars.TIME_DELAY,
-  perGen: envVars.LINK_PER_GEN,
+  perGen: envVars.GENERATION_INDEX,
 };

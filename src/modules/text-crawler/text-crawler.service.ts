@@ -57,7 +57,8 @@ export class TextCrawlerService {
                 return bodyText;
             });
 
-            this.writeFileService.writeFile(text, input);
+            if (text.trim() != '')
+                this.writeFileService.writeFile(text, input);
         }
         catch (err) {
             object.index--;

@@ -26,7 +26,7 @@ export class WriteFileService {
         catch (err) {
             this.logger.warn(`Error writing data from ${url}: ${err}`);
         }
-    }   
+    }
 
     private async checkFileExists(filePath: string): Promise<boolean> {
         try {

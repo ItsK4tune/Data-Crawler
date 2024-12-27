@@ -33,6 +33,9 @@ export class TextCrawlerService {
         for (const link of input)
             await this.linkCrawlerService.crawlLink(link, TextCrawlerService.urls, this.page);
 
+        if (TextCrawlerService.urls.length)
+            this.writeFileService.writeLinkFile(TextCrawlerService.urls);
+
         let count = { index: 0 }
         for (const url of TextCrawlerService.urls){
             this.logger.log(`Crawling data from url: ${url}`);
@@ -43,60 +46,32 @@ export class TextCrawlerService {
     }
 
     async dataCrawl(input: string, object: { index: number }) {
-        this.page.setDefaultTimeout(5000);
+        this.page.setDefaultTimeout(4000);
 
         try {
             object.index++;
 
             await this.page.goto(input, {waitUntil: 'domcontentloaded'});
 
-            // await this.scrollDown();
-
             const text = await this.page.evaluate(() => {
-                const bodyText = document.body.innerText;
-                return bodyText;
+                const allowedTags = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span'];
+                const elements = document.querySelectorAll(
+                    allowedTags.map(tag => `${tag}:not(button ${tag}):not(nav ${tag}):not(a ${tag}):not(header ${tag}):not(footer ${tag})`).join(',')
+                );
+            
+                return Array.from(elements)
+                    .filter(element => !element.closest('button'))
+                    .map(element => (element as HTMLElement).textContent?.trim())
+                    .filter(text => text.length > 0)
+                    .join('\n');
             });
 
             if (text.trim() != '')
-                this.writeFileService.writeFile(text, input);
+                this.writeFileService.writeDataFile(text, input);
         }
         catch (err) {
             object.index--;
             this.logger.warn(`Error crawling data from ${input}: ${err}`, );
-        }
-    }
-
-    async scrollDown(page: Page, time: number){
-        const startTime = Date.now();
-        let timeSinceLastScroll = Date.now();
-
-        try {
-            while (true) {        
-                const previousHeight = await page.evaluate('document.body.scrollHeight');
-                
-                await page.evaluate(() => {
-                    window.scrollBy(0, window.innerHeight);
-                });
-
-                const newHeight = await page.evaluate('document.body.scrollHeight');
-
-                if (newHeight != previousHeight) {
-                    timeSinceLastScroll = Date.now();
-                }
-
-                if (Date.now() - timeSinceLastScroll >= env.timeWindow){
-                    break;
-                }
-
-                if (Date.now() - startTime >= time){
-                    break;
-                }
-
-                await this.delay(env.timeDelay);
-            }
-        }
-        catch (err){
-            this.logger.warn(`Error during scrolling: ${err}`);
         }
     }
 

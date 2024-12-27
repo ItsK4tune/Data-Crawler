@@ -11,6 +11,7 @@ const envVarsSchema = Joi.object()
     TIME_WINDOW: Joi.number().default(500),
     TIME_DELAY: Joi.number().default(200),
     GENERATION_INDEX: Joi.number().default(10),
+    RETRY: Joi.number().default(10),
   })
   .unknown();
 
@@ -28,4 +29,5 @@ export const env = {
   timeWindow: envVars.TIME_WINDOW,
   timeDelay: envVars.TIME_DELAY,
   perGen: envVars.GENERATION_INDEX,
+  retry: envVars.RETRY,
 };

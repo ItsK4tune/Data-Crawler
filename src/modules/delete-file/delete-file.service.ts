@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { pathDataFile, pathLinkFile, pathErrorLinkFile } from 'src/tool/const';
+import { pathDataFile, pathXDataFile, pathLinkFile, pathErrorLinkFile } from 'src/tool/const';
 
 @Injectable()
 export class DeleteFileService {
     private readonly logger = new Logger(DeleteFileService.name);
     private fileDataPath: string = path.resolve(__dirname, pathDataFile);
+    private fileXDataPath: string = path.resolve(__dirname, pathXDataFile);
     private fileLinkPath: string = path.resolve(__dirname, pathLinkFile);
     private fileErrorLinkPath: string = path.resolve(__dirname, pathErrorLinkFile);
     
@@ -15,11 +16,16 @@ export class DeleteFileService {
     async deleteFile() {
         try {
             const fileDataExists = await this.checkFileExists(this.fileDataPath);
+            const fileXDataExists = await this.checkFileExists(this.fileXDataPath);
             const fileLinkExists = await this.checkFileExists(this.fileLinkPath);
             const fileErrorLinkExists = await this.checkFileExists(this.fileErrorLinkPath);
             
             if (fileDataExists) {
                 await fs.unlink(this.fileDataPath);
+            }
+            
+            if (fileXDataExists) {
+                await fs.unlink(this.fileXDataPath);
             }
 
             if (fileLinkExists) {
@@ -29,7 +35,7 @@ export class DeleteFileService {
             if (fileErrorLinkExists) {
                 await fs.unlink(this.fileErrorLinkPath);
             }
-
+        
             this.logger.log(`File deleted successfully`);
             return;
         } catch (err) {

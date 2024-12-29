@@ -21,6 +21,7 @@ export class TextCrawlerService {
     async initialize() {
         this.browser = await puppeteer.launch({ headless: true });
         this.page = await this.browser.newPage();
+        this.page.setDefaultTimeout(4000);
     }
 
     async close() {
@@ -36,6 +37,8 @@ export class TextCrawlerService {
         if (TextCrawlerService.urls.length)
             this.writeFileService.writeLinkFile(TextCrawlerService.urls);
 
+        TextCrawlerService.urls.push(...input);
+
         let count = { index: 0 }
         for (const url of TextCrawlerService.urls){
             this.logger.log(`Crawling data from url: ${url}`);
@@ -46,8 +49,6 @@ export class TextCrawlerService {
     }
 
     async dataCrawl(input: string, object: { index: number }) {
-        this.page.setDefaultTimeout(4000);
-
         try {
             object.index++;
 

@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { pathDataFile, pathLinkFile, pathErrorLinkFile } from 'src/tool/const';
+import { pathDataFile, pathXDataFile, pathLinkFile, pathErrorLinkFile } from 'src/tool/const';
 
 @Injectable()
 export class WriteFileService {
     private readonly logger = new Logger(WriteFileService.name);
     private fileDataPath: string = path.resolve(__dirname, pathDataFile);
+    private fileXDataPath: string = path.resolve(__dirname, pathXDataFile);
     private fileLinkPath: string = path.resolve(__dirname, pathLinkFile);
     private fileErrorLinkPath: string = path.resolve(__dirname, pathErrorLinkFile);
 
@@ -23,6 +24,25 @@ export class WriteFileService {
 
             const content = `URL: ${url}\n${data}\n\n---\n\n`;
             await fs.appendFile(this.fileDataPath, content, 'utf-8');
+
+            this.logger.log(`${url}: Data appended to file successful`)
+        }
+        catch (err) {
+            this.logger.warn(`Error writing data from ${url}: ${err}`);
+        }
+    }
+
+    async writeXDataFile(data: string, url: string) {
+        try {
+            const fileExists = await this.checkFileExists(this.fileXDataPath);
+
+            if (!fileExists) {
+                await fs.writeFile(this.fileXDataPath, '', 'utf-8'); 
+                this.logger.log(`Created new file: ${this.fileXDataPath}`);
+            }
+
+            const content = `URL: ${url}\n${data}\n\n---\n\n`;
+            await fs.appendFile(this.fileXDataPath, content, 'utf-8');
 
             this.logger.log(`${url}: Data appended to file successful`)
         }

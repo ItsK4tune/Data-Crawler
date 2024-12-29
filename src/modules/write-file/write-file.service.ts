@@ -32,7 +32,7 @@ export class WriteFileService {
         }
     }
 
-    async writeXDataFile(data: string, url: string) {
+    async writeXDataFile(datas: string[], link: string, filterWord: string) {
         try {
             const fileExists = await this.checkFileExists(this.fileXDataPath);
 
@@ -41,13 +41,28 @@ export class WriteFileService {
                 this.logger.log(`Created new file: ${this.fileXDataPath}`);
             }
 
-            const content = `URL: ${url}\n${data}\n\n---\n\n`;
+            const content = `URL: ${link}\n\n`;
             await fs.appendFile(this.fileXDataPath, content, 'utf-8');
 
-            this.logger.log(`${url}: Data appended to file successful`)
+            const contentData = datas.find(data => data.includes(`@${filterWord}`));
+            const commentData = datas.filter(data => !data.includes(`@${filterWord}`));
+
+        
+            if (contentData) {
+                const blogMainContent = `Content: ${contentData} \n\nComment:\n`;
+                await fs.appendFile(this.fileXDataPath, blogMainContent, 'utf-8');
+            }
+
+        
+            for (const comment of commentData) {
+                const commentContent = `${comment}\n`;
+                await fs.appendFile(this.fileXDataPath, commentContent, 'utf-8');
+            }
+
+            await fs.appendFile(this.fileXDataPath, `\n\n---\n\n`, 'utf-8');
         }
         catch (err) {
-            this.logger.warn(`Error writing data from ${url}: ${err}`);
+            this.logger.warn(`Error writing data from ${link}: ${err}`);
         }
     }
 

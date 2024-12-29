@@ -9,18 +9,19 @@ export class XDataCrawlerController {
         private readonly xDataCrawlerService: XDataCrawlerService,
     ) {}
 
+   
+    @Post()
     @ApiBody({
         schema: {
             type: 'object',
             properties: {
                 url: {
                     type: 'string',
-                    format: 'uri', // Đảm bảo định dạng là URI nếu cần
+                    format: 'uri', 
                 },
             },
         },
     })
-    @Post()
     async Submit(@Body() body: { url: string }) {
         await this.xDataCrawlerService.initialize();
         await this.xDataCrawlerService.do(body.url);

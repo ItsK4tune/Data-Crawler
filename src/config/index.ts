@@ -12,6 +12,10 @@ const envVarsSchema = Joi.object()
     TIME_DELAY: Joi.number().default(200),
     GENERATION_INDEX: Joi.number().default(10),
     RETRY: Joi.number().default(10),
+
+    USERNAME: Joi.string().optional(),
+    PASSWORD: Joi.string().optional(),
+    EMAIL_OR_PHONE: Joi.string().optional(),
   })
   .unknown();
 
@@ -30,4 +34,8 @@ export const env = {
   timeDelay: envVars.TIME_DELAY,
   perGen: envVars.GENERATION_INDEX,
   retry: envVars.RETRY,
+
+  username: envVars.USERNAME,
+  password: envVars.PASSWORD,
+  verify: envVars.EMAIL_OR_PHONE,
 };

@@ -66,6 +66,39 @@ export class WriteFileService {
         }
     }
 
+    async writeXDataFile2(data: string, link: string) {
+        try {
+            const fileExists = await this.checkFileExists(this.fileXDataPath);
+    
+            if (!fileExists) {
+                await fs.writeFile(this.fileXDataPath, JSON.stringify({}, null, 2), 'utf-8');
+                this.logger.log(`Created new file: ${this.fileXDataPath}`);
+            }
+    
+            const fileContent = await fs.readFile(this.fileXDataPath, 'utf-8');
+            const jsonData = JSON.parse(fileContent || "{}");
+    
+            if (!jsonData.url) {
+                jsonData.url = link;
+            }
+    
+            if (!jsonData.tweet) {
+                jsonData.tweet = [];
+            }
+            if (!jsonData.tweet.includes(data)) {
+                jsonData.tweet.push(data);
+                this.logger.log(`Added new tweet: ${data}`);
+            } else {
+                this.logger.log(`Data already exists, skipping: ${data}`);
+            }
+    
+            await fs.writeFile(this.fileXDataPath, JSON.stringify(jsonData, null, 2), 'utf-8');
+        } catch (err) {
+            this.logger.warn(`Error writing data from ${link}: ${err}`);
+        }
+    }    
+    
+
     async writeLinkFile(urls: string[]) {
         try {
             const fileExists = await this.checkFileExists(this.fileLinkPath);

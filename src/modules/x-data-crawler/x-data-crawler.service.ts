@@ -74,11 +74,11 @@ export class XDataCrawlerService {
     }
 
     async scrollDownForMain(url: string){
-        const startTime = Date.now();
         const filterWord = url.split('/').pop();
 
         try {
             await this.page.waitForNavigation();
+            const startTime = Date.now();
 
             while (true) {
                 await this.page.waitForSelector('div[data-testid="cellInnerDiv"] div[class="css-175oi2r r-1igl3o0 r-qklmqi r-1adg3ll r-1ny4l3l"]');
@@ -115,7 +115,7 @@ export class XDataCrawlerService {
         for (const link of this.blogLink){
             try {
                 await this.page.goto(link, { waitUntil: 'load' });
-                await this.scrollDownForSub(link, url);
+                await this.getTweet(link, url);
             }
             catch {
                 continue;
@@ -176,6 +176,46 @@ export class XDataCrawlerService {
         }
         catch (err){
             this.logger.warn(`Error during sub scrolling: ${err}`);
+        }
+    }
+
+    async getTweet(link: string, url: string){
+        const filterWord = url.split('/').pop();
+
+        try {
+            await this.page.waitForSelector('div[class="css-175oi2r r-1igl3o0 r-qklmqi r-1adg3ll r-1ny4l3l"]', { timeout: 5000 });
+
+                
+            const elements = await this.page.$$('div[class="css-175oi2r r-1igl3o0 r-qklmqi r-1adg3ll r-1ny4l3l"]');
+
+            for (const element of elements) {
+                const articleText = await element.evaluate(el => {
+                    const article = el.querySelector(`article `);
+
+                    const unwantedSelectors = [
+                        'div.css-175oi2r.r-1kbdv8c.r-18u37iz.r-1oszu61.r-3qxfft.r-n7gxbd.r-2sztyj.r-1efd50x.r-5kkj8d.r-h3s6tt.r-1wtj0ep.r-1igl3o0.r-rull8r.r-qklmqi',
+                        'div.css-175oi2r.r-1kbdv8c.r-18u37iz.r-1wtj0ep.r-1ye8kvj.r-1s2bzr4',
+                        'div.css-175oi2r.r-1wbh5a2.r-1a11zyx',
+                        'div.css-175oi2r.r-adacv.r-1udh08x.r-1kqtdi0.r-1867qdf.r-rs99b7.r-o7ynqc.r-6416eg.r-1ny4l3l.r-1loqt21',
+                        'button'
+                    ];
+
+                    unwantedSelectors.forEach(selector => {
+                        const unwantedElements = article.querySelectorAll(selector);
+                        unwantedElements.forEach(element => element.remove());
+                    });
+
+                    return article ? (article as HTMLElement).innerText.replace(/\n/g, ' ') : '';
+                });
+
+                if (articleText.includes(filterWord)) {
+                    await this.writeFileService.writeXDataFile2(articleText, url);
+                    break;
+                }
+            }
+        }
+        catch (err){
+            this.logger.warn(`Error during getting content at ${link}: ${err}`);
         }
     }
 

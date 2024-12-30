@@ -135,7 +135,7 @@ export class XDataCrawlerService {
                 } catch (err) {
                     continue;
                 }
-                
+                // div[class="css-175oi2r r-1adg3ll r-1ny4l3l"]
                 const elements = await this.page.$$('div[class="css-175oi2r r-1igl3o0 r-qklmqi r-1adg3ll r-1ny4l3l"]');
 
                 for (const element of elements) {
